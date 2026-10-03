@@ -12,18 +12,15 @@
   const backdrop = (e: MouseEvent) => {
     if (e.target === e.currentTarget) close();
   };
+  // Choices made in a dialog (Second Chance used / given, duplicate bust, action targets) complete the turn at once;
+  // only during a Flip 3 do they stay selected until "Continue".
   const upd = (nr: E.Round) => {
-    setGame({ ...g, round: nr });
+    const ng = { ...g, round: nr };
+    setGame(E.inFlip3(nr) ? ng : E.confirmTurn(ng));
     close();
   };
 
-  // In a regular turn Freeze and Flip 3 take effect immediately, without a further confirmation.
-  const pickTarget = (round: E.Round, kind: 'freeze' | 'flip3', target: number) => {
-    const nr = E.setActionTarget(round, kind, target);
-    if (!E.inFlip3(round)) setGame(E.confirmTurn({ ...g, round: nr }));
-    else setGame({ ...g, round: nr });
-    close();
-  };
+  const pickTarget = (round: E.Round, kind: 'freeze' | 'flip3', target: number) => upd(E.setActionTarget(round, kind, target));
 
   // ---- edit hand ----
   const editPlayer = $derived(d?.t === 'edit' ? d.player : 0);
