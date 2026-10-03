@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flip 7 Scoreboard – Mockups (v2)</title>
+<style>
+  :root {
+    --bg: #12172b; --card: #1d2440; --card2: #262f52; --line: #343e6b;
+    --text: #f2f4ff; --muted: #9aa3cc;
+    --accent: #ffc83d; --on-accent: #231a00; --good: #3ddc97; --bad: #ff5d6c; --ice: #5cc8ff; --violet: #b18cff;
+    --accent-bg: #2f2810; --bad-bg: #2a1a2a; --ice-bg: #14283a; --violet-bg: #261f3d; --good-bg: #12342a;
+  }
+  /* light theme: applied per device frame so both themes can be shown side by side */
+  .light {
+    --bg: #f3f5fd; --card: #ffffff; --card2: #e6eaf8; --line: #c9d0ec;
+    --text: #1a2040; --muted: #5d668f;
+    --accent: #e0a000; --on-accent: #ffffff; --good: #14a468; --bad: #d63a4b; --ice: #1a86c8; --violet: #7a4fe0;
+    --accent-bg: #fff4d6; --bad-bg: #fde6e9; --ice-bg: #e1f1fb; --violet-bg: #ece5fb; --good-bg: #dff5ea;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0a0d1a; color: #f2f4ff; font: 15px/1.4 system-ui, sans-serif; padding: 24px; }
+  h1 { margin: 0 0 4px; } h2 { margin: 40px 0 4px; border-bottom: 1px solid #2b3358; padding-bottom: 6px; }
+  .note { color: #9aa3cc; max-width: 900px; margin: 4px 0 16px; }
+  .row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; margin-bottom: 28px; }
+  figure { margin: 0; }
+  figcaption { color: #9aa3cc; font-size: 13px; margin-top: 8px; max-width: 360px; }
+  figcaption b { color: #f2f4ff; }
+  figure.wide figcaption { max-width: 860px; }
+  .new { color: #ffc83d; font-weight: 700; }
+
+  .dev { background: var(--bg); color: var(--text); border: 8px solid #000; border-radius: 28px; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+  .phone { width: 360px; height: 720px; }
+  .tablet { width: 860px; height: 540px; border-radius: 20px; }
+
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; color: var(--muted); font-size: 13px; }
+  .pill { background: var(--card2); border-radius: 99px; padding: 4px 10px; font-size: 12px; color: var(--text); }
+  .icon-btn { background: var(--card); border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 6px 10px; font-size: 13px; }
+  .body { flex: 1; padding: 0 14px 14px; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+  .btn { background: var(--card2); border: 1px solid var(--line); color: var(--text); border-radius: 12px; padding: 12px; text-align: center; font-weight: 600; }
+  .btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .btn.good { background: var(--good-bg); color: var(--good); border-color: var(--good); }
+  .btn.good.on { background: var(--good); color: var(--bg); }
+  .btn.bad { background: transparent; color: var(--bad); border-color: var(--bad); }
+  .btn.big { padding: 15px; font-size: 17px; }
+  .btn.disabled { opacity: .4; }
+  .muted { color: var(--muted); }
+  .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; margin: 2px 0 0; }
+  .bottom { display: flex; gap: 8px; } .bottom .stay { flex: 1; } .bottom .next { flex: 2; }
+
+  .who { text-align: center; padding: 2px 0; }
+  .who .name { font-size: 30px; font-weight: 800; line-height: 1.15; }
+  .who .sub { color: var(--muted); font-size: 13px; }
+  .tag { font-size: 12px; border-radius: 99px; padding: 1px 9px; border: 1px solid var(--violet); color: var(--violet); margin-left: 4px; }
+  .banner { text-align: center; font-weight: 700; border-radius: 10px; padding: 8px; }
+  .banner.bad { background: var(--bad-bg); color: var(--bad); }
+  .dots { text-align: center; letter-spacing: 6px; font-size: 14px; color: var(--accent); }
+
+  .grid { display: grid; gap: 8px; }
+  .g5 { grid-template-columns: repeat(5, 1fr); } .g6 { grid-template-columns: repeat(6, 1fr); } .g3 { grid-template-columns: repeat(3, 1fr); }
+  .num, .mod-b { position: relative; border-radius: 12px; text-align: center; font-weight: 800; border: 1px solid var(--line); background: var(--card); }
+  .num { padding: 13px 0; font-size: 20px; }
+  .mod-b { padding: 11px 0; color: var(--accent); border-color: var(--accent); }
+  /* states, identical for numbers and modifiers */
+  .num.held { border-color: var(--bad); color: var(--bad); background: var(--bad-bg); }     /* drawn in an earlier turn this round */
+  .mod-b.held { background: var(--accent-bg); }
+  .held::after { content: "✓"; position: absolute; top: 1px; right: 6px; font-size: 11px; }
+  .sel { background: var(--accent) !important; border-color: var(--accent) !important; color: var(--on-accent) !important; } /* selected this turn, tap to undo */
+  .sel::after { content: "✓"; position: absolute; top: 1px; right: 6px; font-size: 11px; }
+  .sel.dup { background: var(--bad) !important; border-color: var(--bad) !important; color: #fff !important; }
+  .gone { opacity: .28; border-style: dashed; text-decoration: line-through; }                 /* modifier already drawn by another player */
+  .act { border-radius: 12px; padding: 11px 4px; text-align: center; font-weight: 700; font-size: 13px; border: 1px solid; }
+  .act.freeze { color: var(--ice); border-color: var(--ice); background: var(--ice-bg); }
+  .act.flip3 { color: var(--accent); border-color: var(--accent); background: var(--accent-bg); }
+  .act.sc { color: var(--violet); border-color: var(--violet); background: var(--violet-bg); }
+  .actions { display: flex; gap: 8px; } .actions > * { flex: 1; }
+
+  .plist { display: flex; flex-direction: column; gap: 8px; }
+  .prow { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; }
+  .prow .n { flex: 1; font-weight: 700; font-size: 17px; }
+  .prow .s { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .prow.cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .prow.out { opacity: .5; }
+  .prow input { flex: 1; background: transparent; border: 0; color: var(--text); font-size: 17px; font-weight: 700; outline: none; min-width: 0; }
+  .st { font-size: 11px; border-radius: 6px; padding: 2px 7px; font-weight: 700; }
+  .st.stay { background: var(--good-bg); color: var(--good); } .st.bust { background: var(--bad-bg); color: var(--bad); }
+  .st.frozen { background: var(--ice-bg); color: var(--ice); } .st.play { background: var(--accent-bg); color: var(--accent); }
+  .drag { color: var(--muted); letter-spacing: -2px; } .rm { color: var(--muted); }
+
+  /* setup toggles */
+  .seg { display: inline-flex; background: var(--card2); border-radius: 99px; padding: 2px; font-size: 12px; font-weight: 700; }
+  .seg span { padding: 4px 10px; border-radius: 99px; color: var(--muted); }
+  .seg span.on { background: var(--accent); color: var(--on-accent); }
+  .target { display: flex; justify-content: space-between; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+  .target b { font-size: 22px; border-bottom: 2px dashed var(--accent); padding: 0 4px; }
+  .stepper { display: flex; gap: 10px; align-items: center; justify-content: center; }
+  .stepper .v { font-size: 38px; font-weight: 800; width: 120px; text-align: center; border-bottom: 2px solid var(--accent); }
+  .stepper .b { background: var(--card2); border-radius: 12px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+
+  .scrim { position: absolute; inset: 0; background: rgba(5,8,20,.72); display: flex; align-items: flex-end; }
+  .scrim.center { align-items: center; justify-content: center; }
+  .sheet { background: var(--card); width: 100%; border-radius: 22px 22px 0 0; padding: 18px 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .scrim.center .sheet { width: 440px; border-radius: 22px; }
+  .sheet h3 { margin: 0; font-size: 20px; text-align: center; }
+  .sheet p { margin: 0; text-align: center; color: var(--muted); font-size: 14px; }
+  .big-icon { font-size: 34px; text-align: center; }
+
+  .split { flex: 1; display: flex; min-height: 0; }
+  .split .side { width: 300px; border-right: 1px solid var(--line); padding: 4px 14px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .split .main { flex: 1; padding: 0 20px 16px; display: flex; flex-direction: column; gap: 8px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .rank { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+  .rank .pos { font-size: 22px; width: 34px; text-align: center; }
+  .rank .n { flex: 1; font-size: 19px; font-weight: 800; } .rank .sc { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .rank.first { border-color: var(--accent); background: var(--accent-bg); }
+  .spacer { flex: 1; } .center { text-align: center; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: #9aa3cc; margin: 8px 0 18px; align-items: center; }
+  .legend .num, .legend .mod-b { width: 44px; padding: 8px 0; font-size: 15px; }
+  .legend .dev { all: unset; }
+</style>
+</head>
+<body>
+
+<h1>Flip 7 Scoreboard – UI mockups <span class="new">v2</span></h1>
+<p class="note">Static, non-interactive mock-ups. Changes since v1 are marked <span class="new">NEW</span> in the captions.</p>
+
+<h2>Card states (apply to numbers <i>and</i> modifiers) <span class="new">NEW</span></h2>
+<div class="row" style="gap:36px;margin-bottom:8px">
+  <div class="dev" style="border:0;border-radius:16px;padding:14px;flex-direction:row;gap:22px;flex-wrap:wrap;width:auto;max-width:900px">
+    <div style="width:230px"><div class="grid g3"><div class="num">5</div><div class="mod-b">+2</div><div class="num">7</div></div><div class="muted" style="font-size:13px;margin-top:6px"><b style="color:var(--text)">Available</b> – tap to draw it</div></div>
+    <div style="width:230px"><div class="grid g3"><div class="num sel">5</div><div class="mod-b sel">+2</div><div class="num sel dup">8</div></div><div class="muted" style="font-size:13px;margin-top:6px"><b style="color:var(--text)">Selected this turn</b> – tap again to undo (red = duplicate → bust)</div></div>
+    <div style="width:230px"><div class="grid g3"><div class="num held">3</div><div class="mod-b held">+4</div><div class="num">7</div></div><div class="muted" style="font-size:13px;margin-top:6px"><b style="color:var(--text)">Already in this player's hand</b> from earlier turns of the round (locked)</div></div>
+    <div style="width:230px"><div class="grid g3"><div class="mod-b gone">+10</div><div class="mod-b gone">+2</div><div class="mod-b">×2</div></div><div class="muted" style="font-size:13px;margin-top:6px"><b style="color:var(--text)">Modifier drawn by another player</b> – greyed out, only one of each exists</div></div>
+  </div>
+</div>
+
+<h2>Phone</h2>
+<div class="row">
+
+<!-- 1 SETUP -->
+<figure>
+<div class="dev phone">
+  <div class="top"><b style="color:var(--text);font-size:19px">Flip 7</b>
+    <span style="display:flex;gap:6px"><span class="seg"><span class="on">EN</span><span>DE</span></span><span class="seg"><span>☀</span><span class="on">☾</span></span></span></div>
+  <div class="body">
+    <div class="target"><span>First to reach</span><span><b>200</b> <span class="muted">✎</span></span></div>
+    <div class="label">Players – in turn order</div>
+    <div class="plist">
+      <div class="prow"><span class="drag">⋮⋮</span><input value="Anna"><span class="rm">✕</span></div>
+      <div class="prow"><span class="drag">⋮⋮</span><input value="Ben"><span class="rm">✕</span></div>
+      <div class="prow"><span class="drag">⋮⋮</span><input value="Clara"><span class="rm">✕</span></div>
+      <div class="prow"><span class="drag">⋮⋮</span><input value="Dave"><span class="rm">✕</span></div>
+      <div class="prow" style="border-style:dashed;justify-content:center;color:var(--muted)">＋ Add player</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="btn primary big">Start game (4 players)</div>
+  </div>
+</div>
+<figcaption><b>1 · Setup.</b> <span class="new">NEW</span> Language (EN/DE) and theme (light/dark) switches top right, winning score (default 200) is tapped to edit (1b). Player order is fixed once started; the starting player rotates every round.</figcaption>
+</figure>
+
+<!-- 1b TARGET EDIT -->
+<figure>
+<div class="dev phone">
+  <div class="top"><b style="color:var(--text);font-size:19px">Flip 7</b><span></span></div>
+  <div class="body"><div class="target"><span>First to reach</span><span><b>200</b></span></div><div class="spacer"></div></div>
+  <div class="scrim">
+    <div class="sheet">
+      <h3>Winning score</h3>
+      <div class="stepper"><div class="b">−</div><div class="v">200</div><div class="b">+</div></div>
+      <div style="display:flex;gap:8px"><div class="btn" style="flex:1">100</div><div class="btn" style="flex:1;border-color:var(--accent)">200</div><div class="btn" style="flex:1">300</div></div>
+      <div class="btn primary">OK</div>
+    </div>
+  </div>
+</div>
+<figcaption><b>1b · Edit winning score.</b> <span class="new">NEW</span> Opens when tapping the number: numeric input, ±10 steps and a few presets.</figcaption>
+</figure>
+
+<!-- 1c LIGHT / GERMAN -->
+<figure>
+<div class="dev phone light">
+  <div class="top"><b style="color:var(--text);font-size:19px">Flip 7</b>
+    <span style="display:flex;gap:6px"><span class="seg"><span>EN</span><span class="on">DE</span></span><span class="seg"><span class="on">☀</span><span>☾</span></span></span></div>
+  <div class="body">
+    <div class="target"><span>Wer zuerst erreicht</span><span><b>200</b> <span class="muted">✎</span></span></div>
+    <div class="label">Spieler – in Spielreihenfolge</div>
+    <div class="plist">
+      <div class="prow"><span class="drag">⋮⋮</span><input value="Anna"><span class="rm">✕</span></div>
+      <div class="prow"><span class="drag">⋮⋮</span><input value="Ben"><span class="rm">✕</span></div>
+      <div class="prow"><span class="drag">⋮⋮</span><input value="Clara"><span class="rm">✕</span></div>
+      <div class="prow"><span class="drag">⋮⋮</span><input value="Dave"><span class="rm">✕</span></div>
+      <div class="prow" style="border-style:dashed;justify-content:center;color:var(--muted)">＋ Spieler hinzufügen</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="btn primary big">Spiel starten (4 Spieler)</div>
+  </div>
+</div>
+<figcaption><b>1c · Light theme + German.</b> <span class="new">NEW</span> The same setup screen with both switches flipped. Both choices are remembered in local storage (defaults: system theme / browser language).</figcaption>
+</figure>
+
+</div>
+
+<div class="row">
+
+<!-- 2 TURN -->
+<figure>
+<div class="dev phone">
+  <div class="top"><span class="pill">Round 3 · Clara started</span><span class="icon-btn">⋯</span></div>
+  <div class="body">
+    <div class="who">
+      <div class="sub">Now playing</div>
+      <div class="name">Ben</div>
+      <div class="sub">Total 84 · this round 22 <span class="tag">♥ 2nd chance</span></div>
+    </div>
+    <div class="label">Number</div>
+    <div class="grid g5">
+      <div class="num">0</div><div class="num">1</div><div class="num">2</div><div class="num held">3</div><div class="num">4</div>
+      <div class="num sel">5</div><div class="num">6</div><div class="num">7</div><div class="num held">8</div><div class="num">9</div>
+      <div class="num">10</div><div class="num">11</div><div class="num held">12</div>
+    </div>
+    <div class="label">Modifier</div>
+    <div class="grid g6">
+      <div class="mod-b gone">+2</div><div class="mod-b held">+4</div><div class="mod-b">+6</div><div class="mod-b">+8</div><div class="mod-b gone">+10</div><div class="mod-b">×2</div>
+    </div>
+    <div class="label">Action</div>
+    <div class="actions">
+      <div class="act freeze">❄ Freeze</div><div class="act flip3">✋ Flip 3</div><div class="act sc">♥ 2nd Chance</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="bottom"><div class="btn good stay">Stay</div><div class="btn primary next big" style="padding:13px">Next →</div></div>
+  </div>
+</div>
+<figcaption><b>2 · Turn screen.</b> <span class="new">NEW</span> Undo button removed. Tapping a card only <i>selects</i> it (yellow, live round score updates); tapping it again deselects it. The turn only advances when <b>Next →</b> is pressed. Here Ben already holds 3, 8, 12, +4 from earlier turns (locked) and has just selected 5. +2 and +10 are greyed out because other players hold them. <b>Stay</b> is a toggle too (lit green when chosen), confirmed with Next. Next is disabled until a card or Stay is chosen. The header shows who started the round.</figcaption>
+</figure>
+
+<!-- 2b BUST -->
+<figure>
+<div class="dev phone">
+  <div class="top"><span class="pill">Round 3 · Clara started</span><span class="icon-btn">⋯</span></div>
+  <div class="body">
+    <div class="who">
+      <div class="sub">Now playing</div>
+      <div class="name">Ben</div>
+      <div class="sub">Total 84 · this round 0</div>
+    </div>
+    <div class="banner bad">💥 Duplicate 8 – Ben busts</div>
+    <div class="label">Number</div>
+    <div class="grid g5">
+      <div class="num">0</div><div class="num">1</div><div class="num">2</div><div class="num held">3</div><div class="num">4</div>
+      <div class="num">5</div><div class="num">6</div><div class="num">7</div><div class="num sel dup">8</div><div class="num">9</div>
+      <div class="num">10</div><div class="num">11</div><div class="num held">12</div>
+    </div>
+    <div class="label">Modifier</div>
+    <div class="grid g6">
+      <div class="mod-b gone">+2</div><div class="mod-b held">+4</div><div class="mod-b">+6</div><div class="mod-b">+8</div><div class="mod-b gone">+10</div><div class="mod-b">×2</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="bottom"><div class="btn good stay disabled">Stay</div><div class="btn primary next big" style="padding:13px">Next →</div></div>
+  </div>
+</div>
+<figcaption><b>2b · Bust.</b> <span class="new">NEW</span> Tapping an already-held number (without Second Chance) selects it in red and shows the bust banner. Tapping the red 8 again undoes it if it was a mis-tap. Next moves on; the player is skipped for the rest of the round.</figcaption>
+</figure>
+
+<!-- 3 TARGET -->
+<figure>
+<div class="dev phone">
+  <div class="top"><span class="pill">Round 3 · Clara started</span><span class="icon-btn">⋯</span></div>
+  <div class="body">
+    <div class="who"><div class="sub">Now playing</div><div class="name">Ben</div></div>
+    <div class="spacer"></div>
+  </div>
+  <div class="scrim">
+    <div class="sheet">
+      <div class="big-icon">✋</div>
+      <h3>Flip 3 – who must draw?</h3>
+      <p>Active players only (you may choose yourself)</p>
+      <div class="plist">
+        <div class="prow"><span class="n">Anna</span><span class="s">42</span></div>
+        <div class="prow"><span class="n">Ben (you)</span><span class="s">84</span></div>
+        <div class="prow"><span class="n">Dave</span><span class="s">61</span></div>
+      </div>
+      <div class="btn bad">Cancel</div>
+    </div>
+  </div>
+</div>
+<figcaption><b>3 · Action target picker.</b> Shown after Freeze or Flip 3 is tapped (same sheet with ❄ for Freeze). Lists active players only. Back on screen 2 the action card stays selected, labelled with its target (e.g. “✋ Flip 3 → Dave”); deselecting it cancels the action. Next then starts Dave's Flip 3 (screen 4).</figcaption>
+</figure>
+
+<!-- 4 FLIP 3 -->
+<figure>
+<div class="dev phone">
+  <div class="top"><span class="pill">Round 3 · Clara started</span><span class="icon-btn">⋯</span></div>
+  <div class="body">
+    <div class="who">
+      <div class="sub" style="color:var(--accent)">✋ Flip 3 from Ben</div>
+      <div class="name">Dave</div>
+      <div class="sub">Total 61 · this round 20</div>
+    </div>
+    <div class="dots">● ● ○</div>
+    <div class="label">Number</div>
+    <div class="grid g5">
+      <div class="num">0</div><div class="num">1</div><div class="num">2</div><div class="num">3</div><div class="num sel">4</div>
+      <div class="num sel">5</div><div class="num">6</div><div class="num">7</div><div class="num">8</div><div class="num held">9</div>
+      <div class="num">10</div><div class="num">11</div><div class="num">12</div>
+    </div>
+    <div class="label">Modifier</div>
+    <div class="grid g6">
+      <div class="mod-b held">+2</div><div class="mod-b gone">+4</div><div class="mod-b">+6</div><div class="mod-b">+8</div><div class="mod-b gone">+10</div><div class="mod-b">×2</div>
+    </div>
+    <div class="label">Action (resolved after the 3 cards)</div>
+    <div class="actions">
+      <div class="act freeze">❄ Freeze</div><div class="act flip3">✋ Flip 3</div><div class="act sc">♥ 2nd Chance</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="btn primary big disabled">Continue → (1 more card)</div>
+  </div>
+</div>
+<figcaption><b>4 · Flip 3 in progress.</b> <span class="new">NEW</span> Cards are selected/deselected exactly like on screen 2, the dots show 2 of 3 drawn. <b>Continue →</b> becomes active once 3 cards are selected (or earlier if the player busts / reaches 7 unique numbers) and only then advances. Action cards drawn here are resolved after Continue.</figcaption>
+</figure>
+
+</div>
+
+<div class="row">
+
+<!-- 5 SECOND CHANCE USE -->
+<figure>
+<div class="dev phone">
+  <div class="top"><span class="pill">Round 3 · Clara started</span><span class="icon-btn">⋯</span></div>
+  <div class="body"><div class="who"><div class="sub">Now playing</div><div class="name">Ben</div></div><div class="spacer"></div></div>
+  <div class="scrim center">
+    <div class="sheet" style="width:calc(100% - 28px);border-radius:22px">
+      <div class="big-icon">♥</div>
+      <h3>Duplicate 8!</h3>
+      <p>Ben holds a Second Chance. Use it? The duplicate 8 and the Second Chance are discarded and Ben stays in the round.</p>
+      <div class="btn primary big">Use Second Chance</div>
+      <div class="btn bad">Bust anyway</div>
+    </div>
+  </div>
+</div>
+<figcaption><b>5 · Second Chance used.</b> Appears when a player holding a Second Chance taps a number they already have. Using it clears the tag from the player; deselecting the card on screen 2 restores it.</figcaption>
+</figure>
+
+<!-- 6a -->
+<figure>
+<div class="dev phone">
+  <div class="top"><span class="pill">Round 3 · Clara started</span><span class="icon-btn">⋯</span></div>
+  <div class="body"><div class="who"><div class="sub">Now playing</div><div class="name">Ben</div></div><div class="spacer"></div></div>
+  <div class="scrim">
+    <div class="sheet">
+      <div class="big-icon">♥</div>
+      <h3>Second Chance – give to…</h3>
+      <p>Ben already has one. Give this one to an active player who doesn't.</p>
+      <div class="plist">
+        <div class="prow"><span class="n">Anna</span><span class="s">42</span></div>
+        <div class="prow"><span class="n">Dave</span><span class="s">61</span></div>
+        <div class="prow out"><span class="n">Ben</span><span class="s">already has one</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<figcaption><b>6a · Give Second Chance away.</b> <span class="new">NEW</span> When at least one player can take it, only those are selectable and there is no discard button. (Undo via the sheet's outside tap / deselecting the card.)</figcaption>
+</figure>
+
+<!-- 6b -->
+<figure>
+<div class="dev phone">
+  <div class="top"><span class="pill">Round 3 · Clara started</span><span class="icon-btn">⋯</span></div>
+  <div class="body"><div class="who"><div class="sub">Now playing</div><div class="name">Ben</div></div><div class="spacer"></div></div>
+  <div class="scrim">
+    <div class="sheet">
+      <div class="big-icon">♥</div>
+      <h3>Second Chance</h3>
+      <p>Ben already has one and every other active player has one too – this card is discarded.</p>
+      <div class="btn primary big">OK, discard</div>
+    </div>
+  </div>
+</div>
+<figcaption><b>6b · Nobody can take it.</b> <span class="new">NEW</span> Only in this case the discard confirmation is shown – with no player list.</figcaption>
+</figure>
+
+<!-- 7 ROUND SUMMARY -->
+<figure>
+<div class="dev phone">
+  <div class="top"><span class="pill">Round 3 finished</span><span></span></div>
+  <div class="body">
+    <div class="center muted">Round points have been added</div>
+    <div class="plist">
+      <div class="prow"><span class="n">Ben</span><span class="st stay">Stayed</span><span class="s">+31</span><b style="width:44px;text-align:right">115</b></div>
+      <div class="prow"><span class="n">Dave</span><span class="st stay">Flip 7!</span><span class="s">+38</span><b style="width:44px;text-align:right">99</b></div>
+      <div class="prow"><span class="n">Anna</span><span class="st frozen">Frozen</span><span class="s">+12</span><b style="width:44px;text-align:right">54</b></div>
+      <div class="prow"><span class="n">Clara</span><span class="st bust">Bust</span><span class="s">+0</span><b style="width:44px;text-align:right">47</b></div>
+    </div>
+    <div class="muted center" style="font-size:12px">Sorted by total · first to 200 wins</div>
+    <div class="spacer"></div>
+    <div class="btn primary big">Start round 4 →</div>
+    <div class="muted center" style="font-size:12px">Dave begins round 4</div>
+    <div class="btn">Fix a score</div>
+  </div>
+</div>
+<figcaption><b>7 · Round summary.</b> Detected automatically when everyone has stayed / busted / frozen, or someone has a Flip 7 (+15). <span class="new">NEW</span> The next round's starter rotates one seat (R1 Anna, R2 Ben, R3 Clara, R4 Dave …) and is announced here. With ≥ 200 points the button becomes “Finish game”.</figcaption>
+</figure>
+
+<!-- 8 GAME OVER -->
+<figure>
+<div class="dev phone">
+  <div class="top"><span class="pill">Game over</span><span></span></div>
+  <div class="body">
+    <div class="center" style="font-size:40px">🏆</div>
+    <div class="center" style="font-size:22px;font-weight:800">Dave wins!</div>
+    <div class="plist">
+      <div class="rank first"><span class="pos">🥇</span><span class="n">Dave</span><span class="sc">214</span></div>
+      <div class="rank"><span class="pos">🥈</span><span class="n">Ben</span><span class="sc">203</span></div>
+      <div class="rank"><span class="pos">🥉</span><span class="n">Anna</span><span class="sc">151</span></div>
+      <div class="rank"><span class="pos muted">4</span><span class="n">Clara</span><span class="sc">122</span></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="btn primary big">New game – same players</div>
+    <div class="btn">Start from scratch</div>
+  </div>
+</div>
+<figcaption><b>8 · Final ranking.</b> Ties share a place. “Same players” resets scores and returns to the turn screen (starting with the first player again); “from scratch” goes back to setup.</figcaption>
+</figure>
+
+</div>
+
+<h2>Tablet (landscape)</h2>
+<p class="note">Same flows and dialogs (centred sheets instead of bottom sheets), scoreboard permanently visible on the left.</p>
+
+<div class="row">
+<figure class="wide">
+<div class="dev tablet">
+  <div class="top"><span class="pill">Round 3 · Clara started</span><b style="color:var(--text)">Flip 7 Scoreboard</b><span class="icon-btn">⋯</span></div>
+  <div class="split">
+    <div class="side">
+      <div class="label">Scoreboard</div>
+      <div class="plist">
+        <div class="prow"><span class="n">Anna</span><span class="st frozen">Frozen</span><span class="s">42 <span style="color:var(--accent)">+12</span></span></div>
+        <div class="prow cur"><span class="n">Ben</span><span class="st play">Playing</span><span class="s">84 <span style="color:var(--accent)">+22</span></span></div>
+        <div class="prow out"><span class="n">Clara</span><span class="st bust">Bust</span><span class="s">47 +0</span></div>
+        <div class="prow"><span class="n">Dave</span><span class="st play">Active</span><span class="s">61 <span style="color:var(--accent)">+20</span></span></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="muted" style="font-size:12px">Total <span style="color:var(--accent)">+ this round</span> · first to 200</div>
+    </div>
+    <div class="main">
+      <div class="who" style="display:flex;align-items:baseline;justify-content:center;gap:14px">
+        <span class="name">Ben</span><span class="sub">is drawing <span class="tag">♥ 2nd chance</span></span>
+      </div>
+      <div style="display:flex;gap:18px">
+        <div style="flex:1.5"><div class="label">Number</div>
+          <div class="grid" style="grid-template-columns:repeat(7,1fr)">
+            <div class="num">0</div><div class="num">1</div><div class="num">2</div><div class="num held">3</div><div class="num">4</div><div class="num sel">5</div><div class="num">6</div>
+            <div class="num">7</div><div class="num held">8</div><div class="num">9</div><div class="num">10</div><div class="num">11</div><div class="num held">12</div>
+          </div>
+        </div>
+        <div style="flex:1"><div class="label">Modifier</div>
+          <div class="grid g3"><div class="mod-b gone">+2</div><div class="mod-b held">+4</div><div class="mod-b">+6</div><div class="mod-b">+8</div><div class="mod-b gone">+10</div><div class="mod-b">×2</div></div>
+        </div>
+      </div>
+      <div class="label">Action</div>
+      <div class="actions"><div class="act freeze">❄ Freeze</div><div class="act flip3">✋ Flip 3</div><div class="act sc">♥ 2nd Chance</div></div>
+      <div class="spacer"></div>
+      <div class="bottom"><div class="btn good stay">Stay</div><div class="btn primary next big" style="padding:13px">Next →</div></div>
+    </div>
+  </div>
+</div>
+<figcaption><b>T1 · Turn screen on tablet.</b> Left: all players with status and running scores. Right: the same turn UI as on the phone, including selection states, greyed-out modifiers and the Next button. Dialogs (screens 3, 5, 6) appear as centred sheets.</figcaption>
+</figure>
+
+<figure class="wide">
+<div class="dev tablet">
+  <div class="top"><span class="pill">Round 3 finished</span><b style="color:var(--text)">Flip 7 Scoreboard</b><span></span></div>
+  <div class="body" style="padding:0 40px 16px">
+    <table>
+      <tr><th>Player</th><th>R1</th><th>R2</th><th>R3</th><th>Total</th><th></th></tr>
+      <tr><td><b>Ben</b></td><td>26</td><td>58</td><td style="color:var(--accent)">+31</td><td><b>115</b></td><td><span class="st stay">Stayed</span></td></tr>
+      <tr><td><b>Dave</b></td><td>20</td><td>41</td><td style="color:var(--accent)">+38</td><td><b>99</b></td><td><span class="st stay">Flip 7!</span></td></tr>
+      <tr><td><b>Anna</b></td><td>30</td><td>12</td><td style="color:var(--accent)">+12</td><td><b>54</b></td><td><span class="st frozen">Frozen</span></td></tr>
+      <tr><td><b>Clara</b></td><td>14</td><td>33</td><td style="color:var(--accent)">+0</td><td><b>47</b></td><td><span class="st bust">Bust</span></td></tr>
+    </table>
+    <div class="spacer"></div>
+    <div style="display:flex;gap:12px;justify-content:center;align-items:center"><div class="btn" style="width:200px">Fix a score</div><div class="btn primary" style="width:300px">Start round 4 – Dave begins →</div></div>
+  </div>
+</div>
+<figcaption><b>T2 · Round summary on tablet.</b> Per-round history table instead of just totals.</figcaption>
+</figure>
+</div>
+
+<h2>Other details</h2>
+<div class="note">
+  <ul>
+    <li><b>Persistence:</b> every action (including the not-yet-confirmed selections of the current turn, open dialogs, language, theme) is written to <code>localStorage</code>; a reload restores the exact screen.</li>
+    <li><b>Layout switch:</b> tablet layout at ≥ ~900px width, phone layout below. The turn screen needs no scrolling.</li>
+    <li><b>Scoring (automatic):</b> sum of numbers → ×2 doubles the number total → + modifiers → +15 for 7 different numbers. Busted = 0. Frozen/stayed bank their current total.</li>
+    <li><b>Tech plan:</b> Vite + Svelte static PWA, served by nginx in a small Docker image on port 8080, no backend.</li>
+  </ul>
+</div>
+<h2>Remaining questions</h2>
+<div class="note">
+  <ol>
+    <li>I made cards from <i>earlier turns</i> of the same round locked (only cards picked in the current turn can be un-picked). Should earlier-turn cards also be correctable – e.g. via a “Edit hand” option in the ⋯ menu?</li>
+    <li>Is it OK that <b>Stay</b> is also a toggle that is confirmed with Next, instead of ending the turn immediately?</li>
+  </ol>
+</div>
+
+</body>
+</html>
